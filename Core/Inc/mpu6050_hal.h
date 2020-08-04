@@ -40,33 +40,33 @@
 typedef struct{
 	GPIO_TypeDef *GPIO_ErrorLedPort;
 	uint16_t     GPIO_ErrorLedPin;
-} mpu6050_hal_ErrorLed;
+} MPU6050_HAL_ERRORLED_t;
 
 typedef struct{
 	float X;
 	float Y;
 	float Z;
-} accelType;
+} MPU6050_HAL_ACCEL_t;
 
 typedef struct{
 	float X;
 	float Y;
 	float Z;
-} gyroType;
+} MPU6050_HAL_GYRO_t;
 
 void I2C_ReadBuffer(uint8_t i2c_address, uint8_t regAddr, uint8_t *aRxBuffer, uint8_t rxBufferSize);
 void I2C_WriteBuffer(uint8_t i2c_address, uint8_t *aTxBuffer, uint8_t txBufferSize);
 
-void mpu6050_hal_init(mpu6050_hal_ErrorLed eLed,
-						I2C_HandleTypeDef ehi2c1,
+void mpu6050_hal_init(MPU6050_HAL_ERRORLED_t *led,
+						I2C_HandleTypeDef *phi2c1,
 						float aScale,
 						float gScale);
 
 void errorLedOn(void);
 void errorLedOff(void);
 
-void getAngleAcceleration(accelType *accel);
-void getAngleGyroscope(gyroType *gyro);
+void getAngleAcceleration(MPU6050_HAL_ACCEL_t *accel);
+void getAngleGyroscope(MPU6050_HAL_GYRO_t *gyro);
 
 void calibrationAccel(void);
 void calibrationGyro(void);

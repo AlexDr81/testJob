@@ -35,6 +35,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define USB_MESSAGE_SIZE 513
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -94,13 +96,13 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
-  mpu6050_hal_ErrorLed ErrLED = {0};
+  MPU6050_HAL_ERRORLED_t ErrLED = {0};
   ErrLED.GPIO_ErrorLedPort = LED_GPIO_Port;
   ErrLED.GPIO_ErrorLedPin = LED_Pin;
-  mpu6050_hal_init(ErrLED, hi2c1, MPU6050_ACCEL_2G_SCALE, MPU6050_GYRO_250_SCALE);
+  mpu6050_hal_init(&ErrLED, &hi2c1, MPU6050_ACCEL_2G_SCALE, MPU6050_GYRO_250_SCALE);
 
-  accelType accelAngle;
-  gyroType gyro, gyroAngle;
+  MPU6050_HAL_ACCEL_t accelAngle;
+  MPU6050_HAL_GYRO_t gyro, gyroAngle;
 
 
   uint32_t previosTime = 0;
@@ -110,7 +112,7 @@ int main(void)
   float angleX = 0.0f;
   float angleY = 0.0f;
 
-  uint8_t message[513] = "\033[2J+-----------------------------------------------+\n\r|               Accleration Angle               |\n\r|       x: 0000,00'      |      y: 0000,00'     |\n\r+-----------------------------------------------+\n\r|                    Gyroscope                  |\n\r| x: 0000,00'/s | y: 0000,00'/s | z: 0000,00'/s |\n\r+-----------------------------------------------+\n\r|                Gyroscope Angle                |\n\r|       x: 0000,00'      |      y: 0000,00'     |\n\r+-----------------------------------------------+";
+  uint8_t message[USB_MESSAGE_SIZE] = "\033[2J+-----------------------------------------------+\n\r|               Accleration Angle               |\n\r|       x: 0000,00'      |      y: 0000,00'     |\n\r+-----------------------------------------------+\n\r|                    Gyroscope                  |\n\r| x: 0000,00'/s | y: 0000,00'/s | z: 0000,00'/s |\n\r+-----------------------------------------------+\n\r|                Gyroscope Angle                |\n\r|       x: 0000,00'      |      y: 0000,00'     |\n\r+-----------------------------------------------+";
 
   calibrationAccel();
   calibrationGyro();
@@ -148,7 +150,7 @@ int main(void)
 	  addMessage(message, 423, angleX);
 	  addMessage(message, 447, angleY);
 
-	  CDC_Transmit_FS(message, strlen((char* )message));
+	  CDC_Transmit_FS(message, USB_MESSAGE_SIZE);
 	  //HAL_Delay(500);
     /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */

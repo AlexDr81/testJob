@@ -1,41 +1,41 @@
 
 #include "mpu6050_hal.h"
 
-mpu6050_hal_ErrorLed errorLed;
-I2C_HandleTypeDef hi2c1;
+MPU6050_HAL_ERRORLED_t *errorLed;
+static I2C_HandleTypeDef *hi2c1;
 uint8_t buffer[6] = {0};
-accelType accelCalibData;
-gyroType gyroCalibData;
+MPU6050_HAL_ACCEL_t accelCalibData;
+MPU6050_HAL_GYRO_t gyroCalibData;
 float accelScale;
 float gyroScale;
 
 void I2C_WriteBuffer(uint8_t i2c_address, uint8_t *aTxBuffer, uint8_t txBufferSize){
 	errorLedOff();
-	  while(HAL_I2C_Master_Transmit(&hi2c1, (uint16_t) i2c_address<<1, aTxBuffer, (uint16_t)txBufferSize, (uint32_t)1000)){
-		  if(HAL_I2C_GetState(&hi2c1) != HAL_I2C_ERROR_AF){
+	  while(HAL_I2C_Master_Transmit(hi2c1, (uint16_t) i2c_address<<1, aTxBuffer, (uint16_t)txBufferSize, (uint32_t)1000)){
+		  if(HAL_I2C_GetState(hi2c1) != HAL_I2C_ERROR_AF){
 			  errorLedOn();
 		  }
 	  }
-	  while(HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY){}
+	  while(HAL_I2C_GetState(hi2c1) != HAL_I2C_STATE_READY){}
   }
 
 void I2C_ReadBuffer(uint8_t i2c_address, uint8_t regAddr, uint8_t *aRxBuffer, uint8_t rxBufferSize){
 	errorLedOff();
   	  I2C_WriteBuffer(i2c_address, &regAddr, 1);
-  	  while(HAL_I2C_Master_Receive(&hi2c1, (uint16_t) i2c_address<<1, aRxBuffer, (uint16_t)rxBufferSize, (uint32_t)1000)){
-  	  		  if(HAL_I2C_GetState(&hi2c1) != HAL_I2C_ERROR_AF){
+  	  while(HAL_I2C_Master_Receive(hi2c1, (uint16_t) i2c_address<<1, aRxBuffer, (uint16_t)rxBufferSize, (uint32_t)1000)){
+  	  		  if(HAL_I2C_GetState(hi2c1) != HAL_I2C_ERROR_AF){
   	  			  errorLedOn();
   	  		  }
   	  	  }
     }
 
-void mpu6050_hal_init(mpu6050_hal_ErrorLed eLed,
-						I2C_HandleTypeDef ehi2c1,
+void mpu6050_hal_init(MPU6050_HAL_ERRORLED_t *led,
+						I2C_HandleTypeDef *phi2c1,
 						float aScale,
 						float gScale){
 	HAL_Delay(100);
-	errorLed = eLed;
-	hi2c1 = ehi2c1;
+	errorLed = led;
+	hi2c1 = phi2c1;
 	accelScale = aScale;
 	gyroScale = gScale;
 
@@ -60,15 +60,15 @@ void mpu6050_hal_init(mpu6050_hal_ErrorLed eLed,
 }
 
 void errorLedOn(void){
-	HAL_GPIO_WritePin(errorLed.GPIO_ErrorLedPort, errorLed.GPIO_ErrorLedPin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(errorLed->GPIO_ErrorLedPort, errorLed->GPIO_ErrorLedPin, GPIO_PIN_RESET);
 }
 
 void errorLedOff(void){
-	HAL_GPIO_WritePin(errorLed.GPIO_ErrorLedPort, errorLed.GPIO_ErrorLedPin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(errorLed->GPIO_ErrorLedPort, errorLed->GPIO_ErrorLedPin, GPIO_PIN_SET);
 }
 
 
-void getAngleAcceleration(accelType *accel){
+void getAngleAcceleration(MPU6050_HAL_ACCEL_t *accel){
 	I2C_ReadBuffer(MPU6050_I2C_ADDRESS, MPU6050_ACCEL_XOUT_H, buffer, 6);
 	float ax = (((int16_t)(buffer[0] << 8)|buffer[1])-accelCalibData.X) / accelScale;
 	float ay = (((int16_t)(buffer[2] << 8)|buffer[3])-accelCalibData.Y) / accelScale;
@@ -79,7 +79,7 @@ void getAngleAcceleration(accelType *accel){
 	accel->Z = 0;
 }
 
-void getAngleGyroscope(gyroType *gyro){
+void getAngleGyroscope(MPU6050_HAL_GYRO_t *gyro){
 	I2C_ReadBuffer(MPU6050_I2C_ADDRESS, MPU6050_GYRO_XOUT_H, buffer, 6);
 
 	gyro->X = (((int16_t)(buffer[0] << 8)|buffer[1]) - gyroCalibData.X) / gyroScale;
