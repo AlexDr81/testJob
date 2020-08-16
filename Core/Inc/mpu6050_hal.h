@@ -4,7 +4,7 @@
 #include <math.h>
 #include "stm32f1xx_hal.h"
 
-#define PI (3.14159265F)
+#define PI          3.14159265358979323846
 
 #define MPU6050_GYRO_CONFIG           0x1B
 #define MPU6050_ACCEL_CONFIG          0x1C

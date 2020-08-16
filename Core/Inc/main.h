@@ -55,14 +55,15 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-void addMessage(uint8_t *message, int position, float value);
+void addMessage(uint8_t *message, uint8_t position, float value);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
 #define LED_Pin GPIO_PIN_13
 #define LED_GPIO_Port GPIOC
 /* USER CODE BEGIN Private defines */
-#define K_FILTER  (0.04f)
+#define GYRO_PART  (0.995f)
+#define ACC_PART  (0.005f)
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

@@ -36,7 +36,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define USB_MESSAGE_SIZE 513
+#define USB_MESSAGE_SIZE 30
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -74,7 +74,7 @@ int main(void)
 
   /* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+  /* MCU Configuration--------USB_MESSAGE_SIZE------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
@@ -102,7 +102,7 @@ int main(void)
   mpu6050_hal_init(&ErrLED, &hi2c1, MPU6050_ACCEL_2G_SCALE, MPU6050_GYRO_250_SCALE);
 
   MPU6050_HAL_ACCEL_t accelAngle;
-  MPU6050_HAL_GYRO_t gyro, gyroAngle;
+  MPU6050_HAL_GYRO_t gyro/*, gyroAngle*/;
 
 
   uint32_t previosTime = 0;
@@ -112,7 +112,8 @@ int main(void)
   float angleX = 0.0f;
   float angleY = 0.0f;
 
-  uint8_t message[USB_MESSAGE_SIZE] = "\033[2J+-----------------------------------------------+\n\r|               Accleration Angle               |\n\r|       x: 0000,00'      |      y: 0000,00'     |\n\r+-----------------------------------------------+\n\r|                    Gyroscope                  |\n\r| x: 0000,00'/s | y: 0000,00'/s | z: 0000,00'/s |\n\r+-----------------------------------------------+\n\r|                Gyroscope Angle                |\n\r|       x: 0000,00'      |      y: 0000,00'     |\n\r+-----------------------------------------------+";
+  // \033[2J
+  uint8_t message[USB_MESSAGE_SIZE] = "X: 0000.00 Y: 0000.00\n\r";
 
   calibrationAccel();
   calibrationGyro();
@@ -131,24 +132,13 @@ int main(void)
 
 	  getAngleGyroscope(&gyro);
 
-	  gyroAngle.X = gyroAngle.X + gyro.X * elapsedTime;
-	  gyroAngle.Y = gyroAngle.Y + gyro.Y * elapsedTime;
-	  gyroAngle.Z = gyroAngle.Z + gyro.Z * elapsedTime;
-
-	  angleX = (1 - K_FILTER) * gyroAngle.X + K_FILTER * accelAngle.X;
-	  angleY = (1 - K_FILTER) * gyroAngle.Y + K_FILTER * accelAngle.Y;
-
+	  angleX = GYRO_PART * (angleX + (gyro.X * elapsedTime)) + ACC_PART * accelAngle.X;
+	  angleY = GYRO_PART * (angleY + (gyro.Y * elapsedTime)) + ACC_PART * accelAngle.Y;
 
 	  //Print to USB(Virtual COM-Port)
-	  addMessage(message, 117, accelAngle.X);
-	  addMessage(message, 141, accelAngle.Y);
 
-	  addMessage(message, 264, gyro.X);
-	  addMessage(message, 280, gyro.Y);
-	  addMessage(message, 296, gyro.Z);
-
-	  addMessage(message, 423, angleX);
-	  addMessage(message, 447, angleY);
+	  addMessage(message, 3, angleX);
+	  addMessage(message, 14, angleY);
 
 	  CDC_Transmit_FS(message, USB_MESSAGE_SIZE);
 	  //HAL_Delay(500);
@@ -264,7 +254,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void addMessage(uint8_t *message, int position, float value){
+void addMessage(uint8_t *message, uint8_t position, float value){
 
     int16_t divisional = (int16_t)((value - (int16_t) value)*100);
 	  	  if (divisional < 0) divisional = divisional*(-1);
@@ -282,6 +272,7 @@ void addMessage(uint8_t *message, int position, float value){
     }
 
 }
+
 /* USER CODE END 4 */
 
 /**

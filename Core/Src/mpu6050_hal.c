@@ -74,8 +74,11 @@ void getAngleAcceleration(MPU6050_HAL_ACCEL_t *accel){
 	float ay = (((int16_t)(buffer[2] << 8)|buffer[3])-accelCalibData.Y) / accelScale;
 	float az = (((int16_t)(buffer[4] << 8)|buffer[5])-accelCalibData.Z) / accelScale;
 
-	accel->X = (float)(atan(ay/sqrt(ax*ax + az*az))) * 180 / PI;
-	accel->Y = (float)(atan(ax/sqrt(ay*ay + az*az))) * 180 / PI;
+	accel->X = (float)(atanf(ay/sqrtf(ax*ax + az*az))) * 180.0f / PI;
+	accel->Y = (float)(atanf(ax/sqrtf(ay*ay + az*az))) * 180.0f / PI;
+
+	//accel->X = (float)(atan2(ay, az)) * 180.0f / PI;
+	//accel->Y = (float)(atan2(-1 * ax, sqrt(ay*ay + az*az))) * 180.0f / PI;
 	accel->Z = 0;
 }
 
